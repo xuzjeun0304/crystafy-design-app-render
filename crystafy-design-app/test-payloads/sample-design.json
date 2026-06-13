@@ -1,0 +1,32 @@
+{
+  "designName": "Test Bracelet",
+  "source": "DIY",
+  "wristSizeCm": 15,
+  "totalPrice": 12.25,
+  "currency": "USD",
+  "previewImageUrl": "https://cdn.shopify.com/s/files/1/0999/2801/5170/files/ChatGPT_Image_Jun_4_2026_12_09_36_PM.png?v=1780736184",
+  "sequenceCode": "CR1-local-test",
+  "logoPalette": ["#7fc7c2", "#9b6ec1"],
+  "beads": [
+    {
+      "variantId": "11111111111111",
+      "sku": "AMZ_BL_001-10",
+      "title": "Amazonite Beads",
+      "titleCn": "亚马逊石",
+      "sizeMm": 10,
+      "quantity": 8,
+      "unitPrice": 0.75,
+      "imageUrl": "https://www.crystafy.com/cdn/shop/files/AMZ_BL_001_bead_thumb_0.webp?v=1779149962&width=200"
+    },
+    {
+      "variantId": "22222222222222",
+      "sku": "AMT_PR_001-10",
+      "title": "Amethyst Beads",
+      "titleCn": "紫水晶",
+      "sizeMm": 10,
+      "quantity": 5,
+      "unitPrice": 1.25,
+      "imageUrl": "https://www.crystafy.com/cdn/shop/files/AMZ_BL_001_bead_thumb_0.webp?v=1779149962&width=200"
+    }
+  ]
+}
