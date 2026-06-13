@@ -120,3 +120,19 @@ https://www.crystafy.com/pages/diy-designer
 3. App 是否已重新安装并授权最新 scopes
 4. 浏览器控制台是否有 401/403/500
 ```
+
+## 5. Design 数据分析接口
+
+查看最近 Design Product 数据：
+
+```text
+https://你的-render域名/api/admin/designs?token=你的CRYSTAFY_SETUP_TOKEN
+```
+
+下载 CSV：
+
+```text
+https://你的-render域名/api/admin/designs/export.csv?token=你的CRYSTAFY_SETUP_TOKEN
+```
+
+CSV 可导入 Excel / 飞书，包含 Design ID、创建时间、总价、手围、SKU 清单、珠子中文清单、图片链接等字段。
