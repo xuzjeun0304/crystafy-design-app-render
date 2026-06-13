@@ -32,6 +32,7 @@ export const config = {
   inventoryLocationId: readEnv('SHOPIFY_INVENTORY_LOCATION_ID'),
   deductBeadInventoryOnOrder: readBool('DEDUCT_BEAD_INVENTORY_ON_ORDER', true),
   archiveDesignProductsOnFulfillment: readBool('ARCHIVE_DESIGN_PRODUCTS_ON_FULFILLMENT', true),
+  allowDesignProductDelete: readBool('ALLOW_DESIGN_PRODUCT_DELETE', false),
   allowUnverifiedLocalRequests: readBool('ALLOW_UNVERIFIED_LOCAL_REQUESTS', false),
   dryRunCreateProduct: readBool('DRY_RUN_CREATE_PRODUCT', true),
 };

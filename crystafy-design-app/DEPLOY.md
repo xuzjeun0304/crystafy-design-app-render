@@ -28,6 +28,7 @@ CRYSTAFY_SETUP_TOKEN=自己设置一串密码，只用来安装 webhook
 SHOPIFY_INVENTORY_LOCATION_ID=可以留空；留空时自动使用有库存的地点
 DEDUCT_BEAD_INVENTORY_ON_ORDER=true
 ARCHIVE_DESIGN_PRODUCTS_ON_FULFILLMENT=true
+ALLOW_DESIGN_PRODUCT_DELETE=false
 DESIGN_PRODUCT_STATUS=ACTIVE
 PUBLISH_DESIGN_PRODUCTS=true
 DESIGN_PRODUCT_TYPE=Custom Bracelet
@@ -142,3 +143,27 @@ https://你的-render域名/api/admin/designs/export.csv?token=你的CRYSTAFY_SE
 ```
 
 CSV 可导入 Excel / 飞书，包含 Design ID、创建时间、总价、手围、SKU 清单、珠子中文清单、图片链接等字段。
+
+## 6. Design Product 清理机制
+
+查看可清理的已归档 Design Product：
+
+```text
+https://你的-render域名/api/admin/designs/cleanup?token=你的CRYSTAFY_SETUP_TOKEN&olderThanDays=30
+```
+
+默认只预览，不会删除。
+
+如需允许删除，在 Render 环境变量中设置：
+
+```text
+ALLOW_DESIGN_PRODUCT_DELETE=true
+```
+
+然后在清理页面输入：
+
+```text
+DELETE_ARCHIVED_DESIGNS
+```
+
+才会真正删除。安全规则：只删除 `ARCHIVED` 且超过指定天数的 Design Product。

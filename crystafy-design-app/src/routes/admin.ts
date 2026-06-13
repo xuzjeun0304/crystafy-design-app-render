@@ -6,6 +6,10 @@ import {
   listDesignAnalytics,
   type DesignAnalyticsRecord,
 } from '../services/designAnalyticsService.js';
+import {
+  deleteArchivedDesignProducts,
+  listArchivedCleanupCandidates,
+} from '../services/designCleanupService.js';
 
 export const adminRouter = Router();
 
@@ -47,6 +51,7 @@ function reportHtml(records: DesignAnalyticsRecord[], token: string, limit: numb
     return sum + (typeof record.totalPrice === 'number' ? record.totalPrice : 0);
   }, 0);
   const csvUrl = `/api/admin/designs/export.csv?token=${encodeURIComponent(token)}&limit=${limit}`;
+  const cleanupUrl = `/api/admin/designs/cleanup?token=${encodeURIComponent(token)}&limit=${limit}&olderThanDays=30`;
 
   const cards = records
     .map((record) => {
@@ -135,6 +140,7 @@ function reportHtml(records: DesignAnalyticsRecord[], token: string, limit: numb
       </div>
       <div class="actions">
         <a class="button" href="${escapeHtml(csvUrl)}">Download CSV</a>
+        <a class="button" href="${escapeHtml(cleanupUrl)}">Cleanup Archived</a>
       </div>
     </header>
     <section class="stats">
@@ -144,6 +150,77 @@ function reportHtml(records: DesignAnalyticsRecord[], token: string, limit: numb
       <div class="stat"><b>USD ${totalRevenue.toFixed(2)}</b><span>Listed Design Value</span></div>
     </section>
     ${cards || '<p>No Design Product records found.</p>'}
+  </main>
+</body>
+</html>`;
+}
+
+function cleanupReportHtml(
+  records: DesignAnalyticsRecord[],
+  token: string,
+  olderThanDays: number,
+  limit: number,
+): string {
+  const rows = records
+    .map(
+      (record) => `
+        <tr>
+          <td>${record.previewImageUrl ? `<img src="${escapeHtml(record.previewImageUrl)}" alt="">` : ''}</td>
+          <td><strong>${escapeHtml(record.designName)}</strong><br><span>${escapeHtml(record.designId)}</span></td>
+          <td>${escapeHtml(formatDate(record.createdAt))}</td>
+          <td>${escapeHtml(record.productStatus)}</td>
+          <td>${escapeHtml(record.currency)} ${escapeHtml(record.totalPrice)}</td>
+          <td><a href="${escapeHtml(record.productUrl)}" target="_blank" rel="noreferrer">Open</a></td>
+        </tr>
+      `,
+    )
+    .join('');
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crystafy Design Cleanup</title>
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; color:#2d2930; background:#faf7f4; }
+    .wrap { width:min(1100px, calc(100% - 32px)); margin:32px auto; }
+    header, .panel { background:#fff; border:1px solid #ebe4e6; border-radius:16px; padding:18px; margin-bottom:16px; }
+    h1 { margin:0 0 8px; font-size:26px; }
+    p { color:#756f78; line-height:1.5; }
+    form { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:14px; }
+    input { min-height:40px; border:1px solid #d9d1d5; border-radius:10px; padding:0 12px; min-width:220px; }
+    button, .button { min-height:40px; border:0; border-radius:999px; padding:0 16px; background:#2d2930; color:white; font-weight:700; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; }
+    .danger { background:#a33b42; }
+    table { width:100%; border-collapse:collapse; background:#fff; border:1px solid #ebe4e6; border-radius:16px; overflow:hidden; }
+    th, td { border-bottom:1px solid #ebe4e6; padding:12px; text-align:left; vertical-align:middle; }
+    th { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#8b607c; }
+    td img { width:64px; height:64px; object-fit:contain; border-radius:10px; background:#fff; }
+    td span { color:#756f78; font-size:13px; }
+    .empty { padding:24px; background:#fff; border:1px solid #ebe4e6; border-radius:16px; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>Design Product Cleanup</h1>
+      <p>Found ${records.length} archived Design Products older than ${olderThanDays} days. Delete is disabled unless Render env <strong>ALLOW_DESIGN_PRODUCT_DELETE=true</strong>.</p>
+      <a class="button" href="/api/admin/designs/report?token=${encodeURIComponent(token)}">Back To Dashboard</a>
+    </header>
+    <section class="panel">
+      <form method="post" action="/api/admin/designs/delete-archived?token=${encodeURIComponent(token)}">
+        <input type="number" name="olderThanDays" min="1" value="${olderThanDays}">
+        <input type="hidden" name="limit" value="${limit}">
+        <input name="confirm" placeholder="Type DELETE_ARCHIVED_DESIGNS">
+        <button class="danger" type="submit">Delete Archived Candidates</button>
+      </form>
+      <p>Safe rule: only Archived products older than the selected days are candidates.</p>
+    </section>
+    ${
+      rows
+        ? `<table><thead><tr><th>Image</th><th>Design</th><th>Created</th><th>Status</th><th>Total</th><th>Product</th></tr></thead><tbody>${rows}</tbody></table>`
+        : '<div class="empty">No cleanup candidates found.</div>'
+    }
   </main>
 </body>
 </html>`;
@@ -171,6 +248,56 @@ adminRouter.get('/designs/report', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(reportHtml(records, token, limit));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ ok: false, error: message });
+  }
+});
+
+adminRouter.get('/designs/cleanup', async (req, res) => {
+  try {
+    const token = String(req.query.token || req.header('x-crystafy-setup-token') || '');
+    requireSetupToken(token);
+    const olderThanDays = Number(req.query.olderThanDays || 30);
+    const limit = Number(req.query.limit || 250);
+    const records = await listArchivedCleanupCandidates({ olderThanDays, limit });
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(cleanupReportHtml(records, token, olderThanDays, limit));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ ok: false, error: message });
+  }
+});
+
+adminRouter.get('/designs/cleanup-candidates', async (req, res) => {
+  try {
+    requireSetupToken(String(req.query.token || req.header('x-crystafy-setup-token') || ''));
+    const olderThanDays = Number(req.query.olderThanDays || 30);
+    const limit = Number(req.query.limit || 250);
+    const records = await listArchivedCleanupCandidates({ olderThanDays, limit });
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({
+      ok: true,
+      olderThanDays,
+      count: records.length,
+      records,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ ok: false, error: message });
+  }
+});
+
+adminRouter.post('/designs/delete-archived', async (req, res) => {
+  try {
+    requireSetupToken(String(req.query.token || req.header('x-crystafy-setup-token') || ''));
+    const olderThanDays = Number(req.body?.olderThanDays || req.query.olderThanDays || 30);
+    const limit = Number(req.body?.limit || req.query.limit || 250);
+    const confirm = String(req.body?.confirm || req.query.confirm || '');
+    const result = await deleteArchivedDesignProducts({ olderThanDays, limit }, confirm);
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     res.status(400).json({ ok: false, error: message });

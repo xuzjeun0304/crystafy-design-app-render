@@ -88,6 +88,7 @@ interface DesignProductsQueryResult {
 
 export interface DesignAnalyticsRecord {
   designId: string;
+  productGid: string;
   productId: string;
   productHandle: string;
   productStatus: string;
@@ -179,6 +180,7 @@ export async function listDesignAnalytics(limit = 100): Promise<DesignAnalyticsR
       const imageUrl = product.media.nodes[0]?.image?.url || payload?.previewImageUrl || '';
       records.push({
         designId: product.designId?.value || payload?.designId || variant?.sku || '',
+        productGid: product.id,
         productId: numericIdFromGid(product.id),
         productHandle: product.handle,
         productStatus: product.status,
@@ -222,6 +224,7 @@ export function designsToCsv(records: DesignAnalyticsRecord[]): string {
     'designName',
     'source',
     'productStatus',
+    'productGid',
     'productId',
     'productUrl',
     'wristSizeCm',
