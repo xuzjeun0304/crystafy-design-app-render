@@ -27,6 +27,10 @@ export const config = {
     .split(',')
     .map((tag) => tag.trim())
     .filter(Boolean),
+  appBaseUrl: readEnv('APP_BASE_URL', readEnv('RENDER_EXTERNAL_URL')),
+  setupToken: readEnv('CRYSTAFY_SETUP_TOKEN'),
+  inventoryLocationId: readEnv('SHOPIFY_INVENTORY_LOCATION_ID'),
+  deductBeadInventoryOnOrder: readBool('DEDUCT_BEAD_INVENTORY_ON_ORDER', true),
   allowUnverifiedLocalRequests: readBool('ALLOW_UNVERIFIED_LOCAL_REQUESTS', false),
   dryRunCreateProduct: readBool('DRY_RUN_CREATE_PRODUCT', true),
 };

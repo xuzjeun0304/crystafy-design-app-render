@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { config } from './config.js';
+import { adminRouter } from './routes/admin.js';
 import { designsRouter } from './routes/designs.js';
 import { localDashboardRouter } from './routes/localDashboard.js';
 import { webhooksRouter } from './routes/webhooks.js';
@@ -27,6 +28,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/designs', designsRouter);
+app.use('/api/admin', adminRouter);
 app.use('/local', localDashboardRouter);
 app.use('/webhooks', webhooksRouter);
 

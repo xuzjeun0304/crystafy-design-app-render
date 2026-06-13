@@ -23,6 +23,10 @@ SHOPIFY_CLIENT_ID=你的新 App Client ID
 SHOPIFY_CLIENT_SECRET=你的新 App Secret
 SHOPIFY_API_VERSION=2026-04
 SHOPIFY_API_SECRET=可以留空；留空时使用 SHOPIFY_CLIENT_SECRET 校验 App Proxy
+APP_BASE_URL=https://你的-render域名
+CRYSTAFY_SETUP_TOKEN=自己设置一串密码，只用来安装 webhook
+SHOPIFY_INVENTORY_LOCATION_ID=可以留空；留空时自动使用有库存的地点
+DEDUCT_BEAD_INVENTORY_ON_ORDER=true
 DESIGN_PRODUCT_STATUS=ACTIVE
 PUBLISH_DESIGN_PRODUCTS=true
 DESIGN_PRODUCT_TYPE=Custom Bracelet
@@ -39,6 +43,18 @@ https://你的-render域名/health
 ```
 
 能看到 `ok: true` 就代表后端上线成功。
+
+## 2.1 安装订单库存扣减 Webhook
+
+Render 部署完成后，打开：
+
+```text
+https://你的-render域名/api/admin/install-webhooks?token=你的CRYSTAFY_SETUP_TOKEN
+```
+
+看到 `ok: true` 后，代表 Shopify 已经会在新订单创建时通知后端。
+
+这个 webhook 只处理 Design Product 订单行，然后按订单里的 SKU 清单扣散珠库存。
 
 ## 2. 配置 Shopify App Proxy
 
