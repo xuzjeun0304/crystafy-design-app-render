@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { requireWebhookHmac } from '../security/shopifyWebhook.js';
 import { archiveDesignProductsForOrder } from '../services/orderArchiveService.js';
-import { deductOrderBeadInventory } from '../services/orderInventoryService.js';
+import {
+  deductOrderBeadInventory,
+  restockOrderBeadInventory,
+} from '../services/orderInventoryService.js';
 
 export const webhooksRouter = Router();
 
@@ -20,6 +23,25 @@ webhooksRouter.post('/orders-create', requireWebhookHmac, async (req, res) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('[orders/create] inventory deduction failed', message);
+    res.status(500).json({ ok: false, error: message });
+  }
+});
+
+webhooksRouter.post('/orders-cancelled', requireWebhookHmac, async (req, res) => {
+  try {
+    const result = await restockOrderBeadInventory(req.body);
+    console.log('[orders/cancelled]', {
+      id: req.body?.id,
+      name: req.body?.name,
+      lineItems: req.body?.line_items?.length,
+      designLines: result.designLines,
+      adjusted: result.adjusted,
+      warnings: result.warnings,
+    });
+    res.status(200).json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error('[orders/cancelled] inventory restock failed', message);
     res.status(500).json({ ok: false, error: message });
   }
 });

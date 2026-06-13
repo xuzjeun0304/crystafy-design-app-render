@@ -143,10 +143,11 @@ async function findInventoryTargetBySku(sku: string) {
   };
 }
 
-export async function deductInventoryBySku(
+async function adjustInventoryBySku(
   requests: InventoryAdjustmentRequest[],
   referenceDocumentUri: string,
   idempotencyKey: string,
+  direction: -1 | 1,
 ): Promise<InventoryDeductionResult> {
   const warnings: string[] = [];
   const changeMap = new Map<
@@ -191,7 +192,7 @@ export async function deductInventoryBySku(
       name: 'available',
       referenceDocumentUri,
       changes: adjusted.map((item) => ({
-        delta: -item.quantity,
+        delta: direction * item.quantity,
         inventoryItemId: item.inventoryItemId,
         locationId: item.locationId,
       })),
@@ -204,4 +205,20 @@ export async function deductInventoryBySku(
   }
 
   return { adjusted, warnings };
+}
+
+export async function deductInventoryBySku(
+  requests: InventoryAdjustmentRequest[],
+  referenceDocumentUri: string,
+  idempotencyKey: string,
+): Promise<InventoryDeductionResult> {
+  return adjustInventoryBySku(requests, referenceDocumentUri, idempotencyKey, -1);
+}
+
+export async function restockInventoryBySku(
+  requests: InventoryAdjustmentRequest[],
+  referenceDocumentUri: string,
+  idempotencyKey: string,
+): Promise<InventoryDeductionResult> {
+  return adjustInventoryBySku(requests, referenceDocumentUri, idempotencyKey, 1);
 }

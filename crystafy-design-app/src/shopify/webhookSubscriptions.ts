@@ -71,6 +71,11 @@ export async function installCoreWebhooks(baseUrl: string) {
       topic: 'ORDERS_FULFILLED',
       uri: `${cleanBase}/webhooks/orders-fulfilled`,
     },
+    {
+      name: 'orders-cancelled',
+      topic: 'ORDERS_CANCELLED',
+      uri: `${cleanBase}/webhooks/orders-cancelled`,
+    },
   ];
 
   const results = [];
