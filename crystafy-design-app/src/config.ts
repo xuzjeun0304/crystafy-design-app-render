@@ -31,6 +31,7 @@ export const config = {
   setupToken: readEnv('CRYSTAFY_SETUP_TOKEN'),
   inventoryLocationId: readEnv('SHOPIFY_INVENTORY_LOCATION_ID'),
   deductBeadInventoryOnOrder: readBool('DEDUCT_BEAD_INVENTORY_ON_ORDER', true),
+  archiveDesignProductsOnFulfillment: readBool('ARCHIVE_DESIGN_PRODUCTS_ON_FULFILLMENT', true),
   allowUnverifiedLocalRequests: readBool('ALLOW_UNVERIFIED_LOCAL_REQUESTS', false),
   dryRunCreateProduct: readBool('DRY_RUN_CREATE_PRODUCT', true),
 };

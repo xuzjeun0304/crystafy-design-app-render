@@ -27,6 +27,7 @@ APP_BASE_URL=https://你的-render域名
 CRYSTAFY_SETUP_TOKEN=自己设置一串密码，只用来安装 webhook
 SHOPIFY_INVENTORY_LOCATION_ID=可以留空；留空时自动使用有库存的地点
 DEDUCT_BEAD_INVENTORY_ON_ORDER=true
+ARCHIVE_DESIGN_PRODUCTS_ON_FULFILLMENT=true
 DESIGN_PRODUCT_STATUS=ACTIVE
 PUBLISH_DESIGN_PRODUCTS=true
 DESIGN_PRODUCT_TYPE=Custom Bracelet
@@ -54,7 +55,14 @@ https://你的-render域名/api/admin/install-webhooks?token=你的CRYSTAFY_SETU
 
 看到 `ok: true` 后，代表 Shopify 已经会在新订单创建时通知后端。
 
-这个 webhook 只处理 Design Product 订单行，然后按订单里的 SKU 清单扣散珠库存。
+这个安装链接会安装两个 webhook：
+
+```text
+ORDERS_CREATE：新订单创建后按 SKU 清单扣散珠库存
+ORDERS_FULFILLED：订单履约完成后把对应 Design Product 自动归档
+```
+
+这两个 webhook 只处理 Design Product 订单行，不会影响普通商品。
 
 ## 2. 配置 Shopify App Proxy
 

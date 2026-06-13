@@ -1,26 +1,13 @@
 import { config } from '../config.js';
 import { deductInventoryBySku, type InventoryAdjustmentRequest } from '../shopify/inventory.js';
 import { fetchDesignPayloadFromProduct } from '../shopify/productDesignPayload.js';
-
-interface OrderLineProperty {
-  name?: string;
-  value?: string | number | boolean | null;
-}
-
-interface OrderLineItem {
-  id?: number;
-  product_id?: number;
-  sku?: string;
-  quantity?: number;
-  properties?: OrderLineProperty[];
-}
-
-interface OrderWebhookPayload {
-  id?: number;
-  admin_graphql_api_id?: string;
-  name?: string;
-  line_items?: OrderLineItem[];
-}
+import {
+  isDesignProductLine,
+  lineProperty,
+  orderGid,
+  type OrderLineItem,
+  type OrderWebhookPayload,
+} from './orderLines.js';
 
 export interface OrderInventoryDeductionSummary {
   ok: boolean;
@@ -29,25 +16,6 @@ export interface OrderInventoryDeductionSummary {
   designLines: number;
   adjusted: number;
   warnings: string[];
-}
-
-function orderGid(order: OrderWebhookPayload): string {
-  if (order.admin_graphql_api_id) return order.admin_graphql_api_id;
-  return `gid://shopify/Order/${order.id || 'unknown'}`;
-}
-
-function lineProperty(line: OrderLineItem, name: string): string | undefined {
-  const prop = line.properties?.find((item) => item.name === name);
-  if (prop?.value === undefined || prop.value === null) return undefined;
-  return String(prop.value);
-}
-
-function isDesignProductLine(line: OrderLineItem): boolean {
-  return (
-    lineProperty(line, '_design_product') === 'true' ||
-    Boolean(lineProperty(line, '_design_id')) ||
-    Boolean(line.sku && line.sku.startsWith('CRY-DESIGN-'))
-  );
 }
 
 function parseSkuSummary(value?: string): InventoryAdjustmentRequest[] {

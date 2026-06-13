@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { config } from '../config.js';
-import { installOrdersCreateWebhook } from '../shopify/webhookSubscriptions.js';
+import { installCoreWebhooks } from '../shopify/webhookSubscriptions.js';
 
 export const adminRouter = Router();
 
@@ -18,8 +18,7 @@ adminRouter.all('/install-webhooks', async (req, res) => {
     requireSetupToken(String(req.query.token || req.header('x-crystafy-setup-token') || ''));
     if (!config.appBaseUrl) throw new Error('APP_BASE_URL is not configured.');
 
-    const baseUrl = config.appBaseUrl.replace(/\/+$/, '');
-    const result = await installOrdersCreateWebhook(`${baseUrl}/webhooks/orders-create`);
+    const result = await installCoreWebhooks(config.appBaseUrl);
     res.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

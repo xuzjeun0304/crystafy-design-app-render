@@ -30,9 +30,9 @@ interface WebhookSubscriptionCreateResult {
   };
 }
 
-export async function installOrdersCreateWebhook(uri: string) {
+async function installWebhook(topic: string, uri: string) {
   const data = await shopifyGraphql<WebhookSubscriptionCreateResult>(WEBHOOK_SUBSCRIPTION_CREATE, {
-    topic: 'ORDERS_CREATE',
+    topic,
     webhookSubscription: {
       uri,
       format: 'JSON',
@@ -56,4 +56,47 @@ export async function installOrdersCreateWebhook(uri: string) {
     ok: true,
     webhook: data.webhookSubscriptionCreate.webhookSubscription,
   };
+}
+
+export async function installCoreWebhooks(baseUrl: string) {
+  const cleanBase = baseUrl.replace(/\/+$/, '');
+  const targets = [
+    {
+      name: 'orders-create',
+      topic: 'ORDERS_CREATE',
+      uri: `${cleanBase}/webhooks/orders-create`,
+    },
+    {
+      name: 'orders-fulfilled',
+      topic: 'ORDERS_FULFILLED',
+      uri: `${cleanBase}/webhooks/orders-fulfilled`,
+    },
+  ];
+
+  const results = [];
+  for (const target of targets) {
+    try {
+      results.push({
+        name: target.name,
+        topic: target.topic,
+        ...(await installWebhook(target.topic, target.uri)),
+      });
+    } catch (error) {
+      results.push({
+        name: target.name,
+        topic: target.topic,
+        ok: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  return {
+    ok: results.every((result) => result.ok),
+    webhooks: results,
+  };
+}
+
+export async function installOrdersCreateWebhook(uri: string) {
+  return installWebhook('ORDERS_CREATE', uri);
 }
