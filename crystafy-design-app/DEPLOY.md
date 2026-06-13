@@ -129,6 +129,12 @@ https://www.crystafy.com/pages/diy-designer
 https://你的-render域名/api/admin/designs?token=你的CRYSTAFY_SETUP_TOKEN
 ```
 
+查看可视化管理页面：
+
+```text
+https://你的-render域名/api/admin/designs/report?token=你的CRYSTAFY_SETUP_TOKEN
+```
+
 下载 CSV：
 
 ```text
