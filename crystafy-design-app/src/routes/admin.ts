@@ -10,6 +10,7 @@ import {
   deleteArchivedDesignProducts,
   listArchivedCleanupCandidates,
 } from '../services/designCleanupService.js';
+import { getNocoDBSyncStatus } from '../services/nocodbDesignSync.js';
 
 export const adminRouter = Router();
 
@@ -314,6 +315,20 @@ adminRouter.get('/designs', async (req, res) => {
       ok: true,
       count: records.length,
       records,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.status(400).json({ ok: false, error: message });
+  }
+});
+
+adminRouter.get('/nocodb/status', (req, res) => {
+  try {
+    requireSetupToken(String(req.query.token || req.header('x-crystafy-setup-token') || ''));
+    res.setHeader('Cache-Control', 'no-store');
+    res.json({
+      ok: true,
+      nocodb: getNocoDBSyncStatus(),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
