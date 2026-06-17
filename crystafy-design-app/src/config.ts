@@ -10,6 +10,11 @@ function readBool(name: string, fallback = false): boolean {
   return ['1', 'true', 'yes', 'on'].includes(raw.toLowerCase());
 }
 
+function readNumber(name: string, fallback: number): number {
+  const raw = Number(readEnv(name));
+  return Number.isFinite(raw) ? raw : fallback;
+}
+
 export const config = {
   nodeEnv: readEnv('NODE_ENV', 'development'),
   port: Number(readEnv('PORT', '8787')),
@@ -34,6 +39,16 @@ export const config = {
   restockBeadInventoryOnCancel: readBool('RESTOCK_BEAD_INVENTORY_ON_CANCEL', true),
   archiveDesignProductsOnFulfillment: readBool('ARCHIVE_DESIGN_PRODUCTS_ON_FULFILLMENT', true),
   allowDesignProductDelete: readBool('ALLOW_DESIGN_PRODUCT_DELETE', false),
+  autoCleanupArchivedDesigns: readBool('AUTO_CLEANUP_ARCHIVED_DESIGNS', false),
+  autoCleanupOlderThanDays: readNumber('AUTO_CLEANUP_OLDER_THAN_DAYS', 30),
+  autoCleanupIntervalHours: readNumber('AUTO_CLEANUP_INTERVAL_HOURS', 24),
+  autoCleanupLimit: readNumber('AUTO_CLEANUP_LIMIT', 250),
+  analyticsWebhookUrl: readEnv('DESIGN_ANALYTICS_WEBHOOK_URL'),
+  analyticsWebhookToken: readEnv('DESIGN_ANALYTICS_WEBHOOK_TOKEN'),
+  nocodbDesignSyncEnabled: readBool('NOCODB_DESIGN_SYNC_ENABLED', false),
+  nocodbApiUrl: readEnv('NOCODB_API_URL'),
+  nocodbApiToken: readEnv('NOCODB_API_TOKEN'),
+  nocodbDesignsTableId: readEnv('NOCODB_DESIGNS_TABLE_ID'),
   allowUnverifiedLocalRequests: readBool('ALLOW_UNVERIFIED_LOCAL_REQUESTS', false),
   dryRunCreateProduct: readBool('DRY_RUN_CREATE_PRODUCT', true),
 };
