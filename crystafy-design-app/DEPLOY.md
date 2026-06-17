@@ -30,6 +30,16 @@ DEDUCT_BEAD_INVENTORY_ON_ORDER=true
 RESTOCK_BEAD_INVENTORY_ON_CANCEL=true
 ARCHIVE_DESIGN_PRODUCTS_ON_FULFILLMENT=true
 ALLOW_DESIGN_PRODUCT_DELETE=false
+AUTO_CLEANUP_ARCHIVED_DESIGNS=false
+AUTO_CLEANUP_OLDER_THAN_DAYS=30
+AUTO_CLEANUP_INTERVAL_HOURS=24
+AUTO_CLEANUP_LIMIT=250
+DESIGN_ANALYTICS_WEBHOOK_URL=可以留空；如需同步飞书/表格/BI，填对方接收 JSON 的 webhook
+DESIGN_ANALYTICS_WEBHOOK_TOKEN=可以留空；如对方 webhook 需要 Bearer Token 再填写
+NOCODB_DESIGN_SYNC_ENABLED=false
+NOCODB_API_URL=https://ops.crystafy.com
+NOCODB_API_TOKEN=可以留空；接 NocoDB 时填写客户 NocoDB API Token
+NOCODB_DESIGNS_TABLE_ID=可以留空；接 NocoDB 时填写 Designs 表 table id
 DESIGN_PRODUCT_STATUS=ACTIVE
 PUBLISH_DESIGN_PRODUCTS=true
 DESIGN_PRODUCT_TYPE=Custom Bracelet
@@ -146,6 +156,59 @@ https://你的-render域名/api/admin/designs/export.csv?token=你的CRYSTAFY_SE
 
 CSV 可导入 Excel / 飞书，包含 Design ID、创建时间、总价、手围、SKU 清单、珠子中文清单、图片链接等字段。
 
+如果需要自动同步到飞书、Google Sheet 或其他 BI 系统，可以让对方提供一个接收 JSON 的 webhook，然后在 Render 添加：
+
+```text
+DESIGN_ANALYTICS_WEBHOOK_URL=https://对方-webhook-url
+DESIGN_ANALYTICS_WEBHOOK_TOKEN=如果对方需要鉴权才填写
+```
+
+系统会在每条 Design Product 创建后推送：Design ID、设计名、价格、手围、总颗数、截图 URL、Product ID、Variant ID、SKU、中文名、数量、单价等数据。
+
+## 5.1 同步到 NocoDB / ops.crystafy.com
+
+客户如果使用 `ops.crystafy.com` 的 NocoDB 多维表格，可以创建一个新的 Designs 表，然后在 Render 添加：
+
+```text
+NOCODB_DESIGN_SYNC_ENABLED=true
+NOCODB_API_URL=https://ops.crystafy.com
+NOCODB_API_TOKEN=客户 NocoDB API Token
+NOCODB_DESIGNS_TABLE_ID=Designs 表的 table id
+```
+
+建议 Designs 表字段：
+
+```text
+Design ID
+Design Name
+Created At
+Source
+Wrist Size cm
+Total Price
+Currency
+Bead Count
+Preview Image URL
+Shopify Product ID
+Shopify Product Numeric ID
+Shopify Variant ID
+Shopify Variant Numeric ID
+Shopify Handle
+SKU Summary
+Bead Summary
+Chinese Sequence
+Sequence Code
+Logo Palette
+Beads JSON
+```
+
+检查配置是否完整：
+
+```text
+https://你的-render域名/api/admin/nocodb/status?token=你的CRYSTAFY_SETUP_TOKEN
+```
+
+说明：NocoDB 同步失败只会在接口返回 warnings，不会阻断 Shopify Design Product 创建和下单。
+
 ## 6. Design Product 清理机制
 
 查看可清理的已归档 Design Product：
@@ -169,3 +232,15 @@ DELETE_ARCHIVED_DESIGNS
 ```
 
 才会真正删除。安全规则：只删除 `ARCHIVED` 且超过指定天数的 Design Product。
+
+如果需要自动定期清理，在 Render 环境变量中设置：
+
+```text
+AUTO_CLEANUP_ARCHIVED_DESIGNS=true
+ALLOW_DESIGN_PRODUCT_DELETE=true
+AUTO_CLEANUP_OLDER_THAN_DAYS=30
+AUTO_CLEANUP_INTERVAL_HOURS=24
+AUTO_CLEANUP_LIMIT=250
+```
+
+说明：自动清理只会处理已经 `ARCHIVED` 且超过指定天数的 Design Product，不会删除普通商品。
