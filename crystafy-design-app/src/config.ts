@@ -15,6 +15,11 @@ function readNumber(name: string, fallback: number): number {
   return Number.isFinite(raw) ? raw : fallback;
 }
 
+function readProductStatus(name: string, fallback = 'DRAFT'): string {
+  const status = readEnv(name, fallback).toUpperCase();
+  return ['ACTIVE', 'DRAFT', 'ARCHIVED'].includes(status) ? status : fallback;
+}
+
 export const config = {
   nodeEnv: readEnv('NODE_ENV', 'development'),
   port: Number(readEnv('PORT', '8787')),
@@ -24,8 +29,8 @@ export const config = {
   shopifyClientSecret: readEnv('SHOPIFY_CLIENT_SECRET'),
   apiVersion: readEnv('SHOPIFY_API_VERSION', '2026-01'),
   apiSecret: readEnv('SHOPIFY_API_SECRET'),
-  designProductStatus: readEnv('DESIGN_PRODUCT_STATUS', 'ACTIVE'),
-  publishDesignProducts: readBool('PUBLISH_DESIGN_PRODUCTS', true),
+  designProductStatus: readProductStatus('DESIGN_PRODUCT_STATUS', 'DRAFT'),
+  publishDesignProducts: readBool('PUBLISH_DESIGN_PRODUCTS', false),
   designProductType: readEnv('DESIGN_PRODUCT_TYPE', 'Custom Bracelet'),
   designProductVendor: readEnv('DESIGN_PRODUCT_VENDOR', 'Crystafy'),
   designProductTags: readEnv('DESIGN_PRODUCT_TAGS', 'custom-design,hidden-design-product')
