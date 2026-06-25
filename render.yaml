@@ -22,9 +22,9 @@ services:
       - key: SHOPIFY_API_SECRET
         sync: false
       - key: DESIGN_PRODUCT_STATUS
-        value: ACTIVE
+        value: DRAFT
       - key: PUBLISH_DESIGN_PRODUCTS
-        value: "true"
+        value: "false"
       - key: DESIGN_PRODUCT_TYPE
         value: Custom Bracelet
       - key: DESIGN_PRODUCT_VENDOR
